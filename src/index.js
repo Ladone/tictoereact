@@ -4,10 +4,9 @@ import './index.css';
 
 class Board extends React.Component {
     renderSquare(i) {
-        console.log(this.props);
-        console.log(this.props.winnerCombination)
         return (
             <Square
+                winnerCombination={this.props.winnerCombination}
                 value={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
             />
@@ -38,6 +37,11 @@ class Board extends React.Component {
 }
 
 function Square(props) {
+    let isWinnerCell = props.winnerCombination.includes(props.value);
+    // console.log(isWinnerCell);
+    // console.log(props.winnerCombination);
+    // console.log(props.value);
+    //
     return (
         <button className={'square ' + (1 ? 1 : 0)} onClick={props.onClick}>
             {props.value}
@@ -60,9 +64,12 @@ class Game extends React.Component {
     }
 
     handleClick(i) {
+        console.log(i);
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[this.state.stepNumber];
         const squares = current.squares.slice();
+
+        this.updateWinnerCombination(squares);
 
         if (this.state.isHaveWinner || squares[i]) {
             return;
@@ -87,6 +94,12 @@ class Game extends React.Component {
         });
     }
 
+    updateWinnerCombination(squares) {
+        if (this.state.isHaveWinner && Object.keys(this.state.winnerCombination).length === 0 && Object.getPrototypeOf(this.state.winnerCombination) === Array.prototype) {
+            this.setState({winnerCombination: getWinnerCombination(squares)});
+        }
+    }
+
     render() {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
@@ -106,7 +119,6 @@ class Game extends React.Component {
         if (winner) {
             status = 'Winner: ' + winner;
             this.state.isHaveWinner = true;
-            this.state.winnerCombination = getWinnerCombination(current.squares);
         } else {
             status = 'Next move: ' + (this.state.xIsNext ? 'X' : 'O');
         }
@@ -115,8 +127,8 @@ class Game extends React.Component {
             <div className="game">
                 <div className="game-board">
                     <Board
+                        winnerCombination={this.state.winnerCombination}
                         squares={current.squares}
-                        winnerCombination={current.winnerCombination}
                         onClick={(i) => this.handleClick(i)}
                     />
                 </div>
